@@ -1,0 +1,72 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.43.1.0
+Copyright (C) 2025 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: 1 CXK, 1, LIC=EXJT4-FATGK-Z9AG9-4F9PE-17VGT-3DR3X
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Plus  Version: 5.43.0.0
+Toolchain Path:  D:\keil5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 5 (build 528)
+Assembler:       Armasm.exe V5.06 update 5 (build 528)
+Linker/Locator:  ArmLink.exe V5.06 update 5 (build 528)
+Library Manager: ArmAr.exe V5.06 update 5 (build 528)
+Hex Converter:   FromElf.exe V5.06 update 5 (build 528)
+CPU DLL:         SARMCM3.DLL V5.43.0.0
+Dialog DLL:      DCM.DLL V1.17.5.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.3.1.0
+Dialog DLL:      TCM.DLL V1.56.6.0
+ 
+<h2>Project:</h2>
+C:\Users\CXK\Desktop\LVGL\F4LVGL\MDK-ARM\F4LVGL.uvprojx
+Project File Date:  12/01/2025
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 5 (build 528)', folder: 'D:\keil5\ARM\ARMCC\Bin'
+Build target 'F4LVGL'
+Note: source file '../Core/Src/system_stm32f4xx.c' - object file renamed from 'F4LVGL\system_stm32f4xx.o' to 'F4LVGL\system_stm32f4xx_1.o'.
+compiling LCD_1inch69_test.c...
+..\Core\Src\LCD_1inch69_test.c(75): error:  #8: missing closing quote
+      Paint_DrawString_CN(30, 130,  "é™ˆæ—­åº?",  &Font24CN, WHITE, BLUE);
+..\Core\Src\LCD_1inch69_test.c(79): error:  #165: too few arguments in function call
+      Paint_DrawImage(gImage_1, 30, 70, 60, 60);
+..\Core\Src\LCD_1inch69_test.c(79): error:  #18: expected a ")"
+      Paint_DrawImage(gImage_1, 30, 70, 60, 60);
+..\Core\Src\LCD_1inch69_test.c(118): error:  #8: missing closing quote
+      Paint_DrawString_CN(30, 130, "é™ˆæ—­åº?", &Font24CN, WHITE, BLUE);
+..\Core\Src\LCD_1inch69_test.c(120): error:  #165: too few arguments in function call
+      Paint_DrawImage(gImage_1, 30, 70, 60, 60);
+..\Core\Src\LCD_1inch69_test.c(120): error:  #18: expected a ")"
+      Paint_DrawImage(gImage_1, 30, 70, 60, 60);
+..\Core\Src\LCD_1inch69_test.c: 0 warnings, 6 errors
+compiling GUI_Paint.c...
+"F4LVGL\F4LVGL.axf" - 6 Error(s), 0 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.5.0.1.pack
+                ARM::CMSIS@5.0.1
+                CMSIS (Cortex Microcontroller Software Interface Standard)
+   * Component: CORE Version: 5.0.1
+
+Package Vendor: Keil
+                https://www.keil.com/pack/Keil.STM32F4xx_DFP.3.1.1.pack
+                Keil::STM32F4xx_DFP@3.1.1
+                STMicroelectronics STM32F4 Series Device Support
+
+<h2>Collection of Component include folders:</h2>
+  ./RTE/_F4LVGL
+  D:/keil5/ARM/PACK/ARM/CMSIS/5.0.1/CMSIS/Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE@5.0.1
+Target not created.
+Build Time Elapsed:  00:00:02
+</pre>
+</body>
+</html>
