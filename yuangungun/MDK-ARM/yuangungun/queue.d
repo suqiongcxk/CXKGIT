@@ -1,0 +1,15 @@
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/queue.c
+yuangungun\queue.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdlib.h
+yuangungun\queue.o: D:\keil5\ARM\ARMCC\Bin\..\include\string.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+yuangungun\queue.o: D:\keil5\ARM\ARMCC\Bin\..\include\stddef.h
+yuangungun\queue.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdint.h
+yuangungun\queue.o: ../Core/Inc/FreeRTOSConfig.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+yuangungun\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
