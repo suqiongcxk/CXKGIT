@@ -48,3 +48,6 @@ zhukong\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
 zhukong\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
 zhukong\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
 zhukong\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+zhukong\rs485.o: ../Core/Inc/MYDWT.h
+zhukong\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+zhukong\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

@@ -29,6 +29,7 @@
 #include  "semphr.h"
 #include  "tim.h"
 #include  "RS485.h"
+#include  "MYDWT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,7 +52,7 @@
 //@@@@@@@@@@@@@@@@@优先级以及变量@@@@@@@@@@@@@@@@@@@@@@@   
 
 float  slave_velocity_arr[4] = {0};
-
+float  AAA[1] = {10};
 
 //RS485       优先级    osPriorityBelowNormal       task02
 //zhuhanshu   优先级    osPriorityLow               dautask
@@ -73,6 +74,13 @@ const osThreadAttr_t RS485_attributes = {
   .name = "RS485",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for velocityadd */
+osThreadId_t velocityaddHandle;
+const osThreadAttr_t velocityadd_attributes = {
+  .name = "velocityadd",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for RS485_DMA */
 osMessageQueueId_t RS485_DMAHandle;
@@ -97,6 +105,7 @@ const osSemaphoreAttr_t RS485SE_attributes = {
 
 void StartDefaultTask(void *argument);
 void StartTask02(void *argument);
+void StartTask03(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -144,6 +153,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of RS485 */
   RS485Handle = osThreadNew(StartTask02, NULL, &RS485_attributes);
 
+  /* creation of velocityadd */
+  velocityaddHandle = osThreadNew(StartTask03, NULL, &velocityadd_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -190,13 +202,17 @@ void StartTask02(void *argument)
   /* USER CODE BEGIN StartTask02 */
 	HAL_TIM_Base_Start_IT(&htim1);
   /* Infinite loop */
-	float  AAA[1] = {0.90};
   for(;;)
   {
     if(xSemaphoreTake(RS485SEHandle, portMAX_DELAY) == pdPASS )  //没有信号量我就把自己挂起来，让其他函数执行
     {
 			
+			start_cycle = DWT->CYCCNT;			
+			
 			MASTER_SEND_DATA(Slave1_ID, AAA,1 );
+			end_cycle = DWT->CYCCNT; 
+	    printf("%d\n",end_cycle - start_cycle);
+			
 //			 RS485_SET_MOTEOR_SPEED(target_velocity_1,
 //			target_velocity_2,
 //			target_velocity_3,
@@ -205,6 +221,36 @@ void StartTask02(void *argument)
     }
   }
   /* USER CODE END StartTask02 */
+}
+
+/* USER CODE BEGIN Header_StartTask03 */
+/**
+* @brief Function implementing the velocityadd thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask03 */
+void StartTask03(void *argument)
+{
+  /* USER CODE BEGIN StartTask03 */
+  /* Infinite loop */
+  for(;;)
+  {
+		
+		for (int i =0; i<600; i++)
+		{
+		AAA[0] = i;
+    osDelay(5);		
+		}
+		for (int i =600; i>0; i--)
+		{
+		AAA[0] = i;
+    osDelay(5);
+		}
+
+		
+  }
+  /* USER CODE END StartTask03 */
 }
 
 /* Private application code --------------------------------------------------*/

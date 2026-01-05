@@ -21,8 +21,8 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-uint8_t RS485_rx_dma_buffer[52] ;
-uint8_t RS485_dma_buffer[52] ;
+uint8_t RS485_rx_dma_buffer[52];
+uint8_t RS485_dma_buffer[52];
 volatile uint8_t RS485_flag=0;
 
 

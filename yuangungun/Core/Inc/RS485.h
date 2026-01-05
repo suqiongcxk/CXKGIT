@@ -60,6 +60,7 @@ void Analyze_RS485_data (void);;
 void clear_ACK (void );
 void  Analyze_ACKfrme_data  ( uint8_t SEND_ID1  , uint8_t receive_ID2 );
 void  send_ACKback ( uint8_t SEND_ID1  , uint8_t receive_ID2 );//收到了别人给我的报文
+void  RS485_SendAck(  uint16_t *buf, uint16_t len ) ;
 #endif
 
 

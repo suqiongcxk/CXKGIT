@@ -118,7 +118,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim2);
 	HAL_UART_Receive_IT(&huart5,sbus_buf, SBUS_FRAME_SIZE);
-	
+	Enable_DWT_CycleCounter();
 
   /* USER CODE END 2 */
 

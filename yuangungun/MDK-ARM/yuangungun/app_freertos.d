@@ -48,3 +48,4 @@ yuangungun\app_freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/se
 yuangungun\app_freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 yuangungun\app_freertos.o: ../Core/Inc/tim.h
 yuangungun\app_freertos.o: ../Core/Inc/RS485.h
+yuangungun\app_freertos.o: ../Core/Inc/MYDWT.h

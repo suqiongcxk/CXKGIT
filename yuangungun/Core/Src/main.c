@@ -99,8 +99,8 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	RS485_RX_EN
-	Enable_DWT_CycleCounter();
 	HAL_TIM_Base_Start(&htim2);
+	Enable_DWT_CycleCounter();
   /* USER CODE END 2 */
 
   /* Init scheduler */

@@ -35,3 +35,12 @@ yuangungun\rs485.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h
 yuangungun\rs485.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h
 yuangungun\rs485.o: ../Core/Inc/usart.h
 yuangungun\rs485.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdio.h
+yuangungun\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+yuangungun\rs485.o: ../Core/Inc/FreeRTOSConfig.h
+yuangungun\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+yuangungun\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+yuangungun\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+yuangungun\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+yuangungun\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+yuangungun\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+yuangungun\rs485.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

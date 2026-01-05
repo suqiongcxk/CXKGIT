@@ -29,6 +29,7 @@
 #include  "semphr.h"
 #include  "tim.h"
 #include  "RS485.h"
+#include  "MYDWT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -156,7 +157,7 @@ void StartDefaultTask(void *argument)
 }
 
 /* USER CODE BEGIN Header_StartTask02 */
-/**
+/**0
 * @brief Function implementing the RS485 thread.
 * @param argument: Not used
 * @retval None
@@ -171,7 +172,10 @@ void StartTask02(void *argument)
 		
      if(xSemaphoreTake(RS485RXHandle, portMAX_DELAY) == pdPASS )  //没有信号量我就把自己挂起来，让其他函数执行
     {
+			
 			Analyze_RS485_data();
+//			end_cycle = DWT->CYCCNT;
+//			printf("%lld\n", end_cycle - start_cycle);
     }
   }
   /* USER CODE END StartTask02 */

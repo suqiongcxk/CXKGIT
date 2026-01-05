@@ -6,6 +6,9 @@
 #include "stdio.h"
 #include "usart.h"
 #include <stdint.h>
+#include "FreeRTOS.h"
+#include "task.h"
+
 
 float velocity_arr[1] = {0};
 float target_velocity_1 = 0;
@@ -179,15 +182,55 @@ void  MASTER_ENABLE_Slave_TX( uint16_t ID   ,uint16_t command )
 
 
 //485发送数据
-void  RS485_SendBytes(  uint16_t *buf, uint16_t len, int  count_SET ) 
- {
+//void  RS485_SendBytes(  uint16_t *buf, uint16_t len, int  count_SET ) 
+// {
 
-     RS485_TX_EN;
-     HAL_UART_Transmit_DMA(&huart3, (uint8_t *) buf, len);
-     while (huart3.gState != HAL_UART_STATE_READY);//等待发送完成
-     RS485_RX_EN;
-    uint32_t  WAIT_ACK_Start = TIM2->CNT;
-    if(count_SET != 0)  //需要重传
+//     RS485_TX_EN;
+//     HAL_UART_Transmit_DMA(&huart3, (uint8_t *) buf, len);
+//     while (huart3.gState != HAL_UART_STATE_READY);//等待发送完成
+//     RS485_RX_EN;
+//    uint32_t  WAIT_ACK_Start = TIM2->CNT;
+//    if(count_SET != 0)  //需要重传
+//    {
+//        for (int count = 0;count < count_SET ;count++)
+//        {
+//            if (RS485_flag == 1) return ;
+//            RS485_TX_EN;
+//            HAL_UART_Transmit_DMA(&huart3, (uint8_t *) buf, len);
+//            while (huart3.gState != HAL_UART_STATE_READY){};//等待发送完成
+//              RS485_RX_EN;
+//            WAIT_ACK_Start = TIM2->CNT;
+//            while (  TIM2->CNT  <= WAIT_ACK_Start +2000) // 两ms内没有收到应答数据等待
+//            {
+//                if (RS485_flag == 1) return ;    
+//            }
+//        }
+//    }
+//		     RS485_RX_EN;
+// }
+void  RS485_SendBytes(  uint16_t *buf, uint16_t len, int  count_SET ) 
+{
+
+    RS485_TX_EN;
+    HAL_UART_Transmit_DMA(&huart3, (uint8_t *) buf, len);
+    while (huart3.gState != HAL_UART_STATE_READY);//等待发送完成
+    RS485_RX_EN;
+    uint32_t  WAIT_ACK_Start = TIM2->CNT; 
+
+		while (  TIM2->CNT  <= WAIT_ACK_Start +100) // 100us内没有收到应答数据等待
+	{
+			if (RS485_flag == 1)
+			{
+			break;
+			}
+			taskYIELD();
+	}	
+	
+//	printf("%d\n",RS485_flag);
+
+	 if( RS485_flag == 0 )
+	 {
+    if(count_SET != 0   )  //需要重传并且没收到数据
     {
         for (int count = 0;count < count_SET ;count++)
         {
@@ -197,13 +240,15 @@ void  RS485_SendBytes(  uint16_t *buf, uint16_t len, int  count_SET )
             while (huart3.gState != HAL_UART_STATE_READY){};//等待发送完成
               RS485_RX_EN;
             WAIT_ACK_Start = TIM2->CNT;
-            while (  TIM2->CNT  <= WAIT_ACK_Start +2000) // 两ms内没有收到应答数据等待
-            {
-                if (RS485_flag == 1) return ;    
+            while (  TIM2->CNT  <= WAIT_ACK_Start +150) // 两ms内没有收到应答数据等待
+            {							  
+                if (RS485_flag == 1){return ;}  
             }
         }
     }
-		     RS485_RX_EN;
+	  }
+
+
  }
 
  //485接收数据处理
@@ -327,17 +372,27 @@ void  Analyze_ACKfrme_data  ( uint8_t SEND_ID1  , uint8_t receive_ID2 )
       }
 }
 
+//485发送应答位
+void  RS485_SendAck(  uint16_t *buf, uint16_t len ) 
+ {
+
+     RS485_TX_EN;
+     HAL_UART_Transmit_DMA(&huart3, (uint8_t *) buf, len);
+     while (huart3.gState != HAL_UART_STATE_READY);//等待发送完成
+     RS485_RX_EN;
+ }
 
 
 
 //发送应答位回去
 void  send_ACKback ( uint8_t SEND_ID1  , uint8_t receive_ID2 )  //上次报文发送方跟接收方  收到了别人给我的报文
 {
-		
+//		printf("1\n");
     uint16_t rs485_buf[3];
     rs485_buf[0] = (HEAD      << 8) | ACK_Frame;    // 包头 + 功能码
     rs485_buf[1] = (receive_ID2 << 8) | SEND_ID1;   //高位发送方低位接收方 ，我再发给别人
     rs485_buf[2] = END;
-    RS485_SendBytes(rs485_buf, sizeof(rs485_buf),0);  //RS485发送
+		RS485_SendAck(rs485_buf, sizeof(rs485_buf));
+//    RS485_SendBytes(rs485_buf, sizeof(rs485_buf),0);  //RS485发送
 }
 

@@ -441,16 +441,19 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
   {
 //		start_cycle = DWT->CYCCNT;
     HAL_UART_DMAStop(&huart3); // 此时安全
-    memcpy(RS485_dma_buffer, RS485_rx_dma_buffer, Size);
     RS485_flag = 1;
+    memcpy(RS485_dma_buffer, RS485_rx_dma_buffer, Size);
+
     memset(RS485_rx_dma_buffer, 0, sizeof(RS485_rx_dma_buffer));
 //		for (int i = 0;i<24 ;i++)
+		
 //		{
 //		printf("%02X ",RS485_dma_buffer[i]);
 //		}
 //		printf("\n");
 		if (RS485RXHandle != NULL)
     {
+//			 start_cycle = DWT->CYCCNT;
        osSemaphoreRelease(RS485RXHandle);
     }
     HAL_UARTEx_ReceiveToIdle_DMA(&huart3, RS485_rx_dma_buffer, sizeof(RS485_rx_dma_buffer));

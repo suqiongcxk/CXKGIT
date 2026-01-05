@@ -53,3 +53,4 @@ zhukong\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 zhukong\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 zhukong\freertos.o: ../Core/Inc/tim.h
 zhukong\freertos.o: ../Core/Inc/RS485.h
+zhukong\freertos.o: ../Core/Inc/MYDWT.h
