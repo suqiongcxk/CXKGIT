@@ -54,12 +54,25 @@ if not defined COUNT (
 )
 echo   总计: !COUNT! 个变更文件
 
-:: 5. 提交
-set TS=%date:~0,4%-%date:~5,2%-%date:~8,2% %time:~0,8%
-set COMMIT_MSG=zhukong 工程更新 - %TS%
+:: 5. 输入提交信息
 echo.
-echo [5/6] 提交: %COMMIT_MSG%
-git commit -m "%COMMIT_MSG%"
+echo ========================================
+echo   请输入本次改动简介:
+echo   (直接回车则使用默认信息)
+echo ========================================
+set /p USER_MSG="Message: "
+
+set TS=%date:~0,4%-%date:~5,2%-%date:~8,2% %time:~0,8%
+if "%USER_MSG%"=="" (
+    set COMMIT_MSG=zhukong 工程更新 - %TS%
+) else (
+    set COMMIT_MSG=%USER_MSG% (%TS%)
+)
+
+:: 6. 提交
+echo.
+echo [5/6] 提交: !COMMIT_MSG!
+git commit -m "!COMMIT_MSG!"
 if %errorlevel% neq 0 (
     echo   [X] 提交失败!
     exit /b 1

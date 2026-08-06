@@ -117,10 +117,25 @@ if ($total -eq 0) {
 }
 
 # ------------------------------------------------------------
-# 5. Commit
+# 5. Input commit message
 # ------------------------------------------------------------
+Write-Host ""
+Write-Host "========================================" -ForegroundColor DarkCyan
+Write-Host "  Enter commit message below:" -ForegroundColor White
+Write-Host "  (Press Enter to use default: zhukong update - <timestamp>)" -ForegroundColor DarkGray
+Write-Host "========================================" -ForegroundColor DarkCyan
+$userMsg = Read-Host "Message"
+
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-$commitMsg = "zhukong update - $timestamp"
+if ($userMsg.Trim() -eq "") {
+    $commitMsg = "zhukong update - $timestamp"
+} else {
+    $commitMsg = "$userMsg ($timestamp)"
+}
+
+# ------------------------------------------------------------
+# 6. Commit
+# ------------------------------------------------------------
 Write-Host ""
 Write-Host "[5/6] Committing: $commitMsg" -ForegroundColor Yellow
 $r = Git-Cmd "commit", "-m", $commitMsg
