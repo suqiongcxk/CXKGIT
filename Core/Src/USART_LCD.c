@@ -11,7 +11,7 @@
 #include "GPIO.h"
 char LCD_Frame [ 30] = {0};
 int16_t   LCD_HEX  = 0;
-int16_t   LCD_MODE  = Normal_mode; //初始化就是正常模式，上电就开始工作Normal_mode
+int16_t   LCD_MODE  = ADC_mode; //上电默认ADC调试模式
 extern JY901S_AngleData IMU_DATA;
 
 
@@ -95,7 +95,7 @@ void LCD_interact ( void )
 												if(huishou_FLAG == 1)
 												{
 													move(0,0);  
-													if(L_JG <= 400 && R_JG<= 400){huishou_FLAG = 2;}
+													if(L_JG <= JG_RECOVERY_TRIGGER && R_JG <= JG_RECOVERY_TRIGGER){huishou_FLAG = 2;}
 										 		}else if(huishou_FLAG == 2)
 												{
 													move(-400,-400);
@@ -106,7 +106,7 @@ void LCD_interact ( void )
 //													STOP();
 //													osDelay(2000);
 													Enemy_search_mode = zizhuan_mode;  
-													xuanzhuan_count = 2000;
+													xuanzhuan_count = XUANZHUAN_VALUE;
 													huishou_FLAG = 3;
 												}else if (huishou_FLAG ==3)
 												{

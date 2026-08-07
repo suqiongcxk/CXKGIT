@@ -42,7 +42,7 @@ extern int  GPIO_VALUE[2] ;
 #define  R_JG      				  PA4
 #define  QIAN_L_JG      		PB1
 #define  QIAN_R_JG      		PA6
-#define  R_huidu      		  PA7
+#define  R_huidu      		    PA7
 #define  L_JG     			    PC1 
 #define  L_JG_30      			PC0
 #define  R_JG_30      			PA5

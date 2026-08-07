@@ -38,6 +38,7 @@
 #include  "usart.h"
 #include "usart_lcd.h"
 #include "remote_contol.h"
+#include "arena_config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -328,28 +329,29 @@ void vADC_UPDATETask(void *argument)
 		
 
 		//700等于252cm，
-		roaming_veocity_STR = aver_huidu > 1900 ? 400 : aver_huidu/9.0f;//
+		roaming_veocity_STR = aver_huidu > GRAY_SPEED_LIGHT_THRESH ? GRAY_SPEED_LIGHT_MAX : aver_huidu/GRAY_SPEED_DIVISOR;//
 		
 		
-		
-		if( aver_huidu < 1800) { 		
-			Enemy_search_mode = zizhuan_mode;   
-		xuanzhuan_count = 1500;  }
-		uint16_t R_value = 50; 
-		uint16_t aver_huidu_value = 2900;
-		uint16_t R_huidu_CALL = R_huidu *1.333f ;
+		//角落必须用自转
+		if( aver_huidu < GRAY_SPEED_AUTO_ROTATE) {
+			Enemy_search_mode = zizhuan_mode;
+		xuanzhuan_count = XUANZHUAN_LOW_GRAY;
+		}
+		uint16_t R_value = GRAY_TURN_R_VALUE;
+		uint16_t aver_huidu_value = GRAY_TURN_HIGH_THRESH;
+		uint16_t R_huidu_CALL = R_huidu * ARENA_GRAY_COMPENSATION_R ;
 		if  ( L_huidu <  R_huidu_CALL )
 		{
-				roaming_veocity_L = aver_huidu > aver_huidu_value ? 550 : (aver_huidu /6.5f); 
-				roaming_R    = aver_huidu> aver_huidu_value ? R_value : (aver_huidu /110.0f);
-				if(roaming_R < 10) roaming_R = 10;
-				roaming_veocity_R = (roaming_veocity_L *roaming_R )/ (roaming_R+22.0f);	
+				roaming_veocity_L = aver_huidu > aver_huidu_value ? GRAY_TURN_MAX_SPEED : (aver_huidu / GRAY_TURN_DIVISOR_L);
+				roaming_R    = aver_huidu> aver_huidu_value ? R_value : (aver_huidu / GRAY_TURN_R_DIVISOR);
+				if(roaming_R < GRAY_TURN_R_MIN) roaming_R = GRAY_TURN_R_MIN;
+				roaming_veocity_R = (roaming_veocity_L *roaming_R )/ (roaming_R + GRAY_TURN_WHEEL_BASE);	
 		}else 
 		{
-				roaming_veocity_R = aver_huidu > aver_huidu_value ? 550 : (aver_huidu /7.0f); 
-				roaming_R    = aver_huidu> aver_huidu_value ? R_value : (aver_huidu /110.0f);
-				if(roaming_R < 10) roaming_R = 10;
-				roaming_veocity_L = (roaming_veocity_R *roaming_R )/ (roaming_R+22.0f);	 
+				roaming_veocity_R = aver_huidu > aver_huidu_value ? GRAY_TURN_MAX_SPEED : (aver_huidu / GRAY_TURN_DIVISOR_R);
+				roaming_R    = aver_huidu> aver_huidu_value ? R_value : (aver_huidu / GRAY_TURN_R_DIVISOR);
+				if(roaming_R < GRAY_TURN_R_MIN) roaming_R = GRAY_TURN_R_MIN;
+				roaming_veocity_L = (roaming_veocity_R *roaming_R )/ (roaming_R + GRAY_TURN_WHEEL_BASE);	 
 		}
 		
 		
@@ -358,17 +360,17 @@ void vADC_UPDATETask(void *argument)
 		//假上台限速：路过出发区时降低直行速度防止撞墙
 		if (CAR_STATUS == ON_STAGE && STAGE_UP_CONFIRMED == 0)
 		{
-			if (roaming_veocity_STR > 150) roaming_veocity_STR = 150;
+			if (roaming_veocity_STR > FAKE_ON_STAGE_SPEED_LIMIT) roaming_veocity_STR = FAKE_ON_STAGE_SPEED_LIMIT;
 		}
 		if(1)  //记得改回1
 			{
 				//记得补偿左右灰度的差值
-				if( (L_huidu < 650 &&  L_huidu > 300 ) && (R_huidu   < 700 &&  R_huidu  > 300 ) ) 
+				if( (L_huidu < ARENA_GRAY_OFF_STAGE_L_MAX &&  L_huidu > ARENA_GRAY_OFF_STAGE_MIN ) && (R_huidu   < ARENA_GRAY_OFF_STAGE_R_MAX &&  R_huidu  > ARENA_GRAY_OFF_STAGE_MIN ) )
 					{
 				
 						
 						
-						if(OFF_STAGE_CNT >= 100) //150*5 = 750ms后判断为台下
+						if(OFF_STAGE_CNT >= OFF_STAGE_CNT_THRES) //150*5 = 750ms后判断为台下
 						{
 							CAR_STATUS = OFF_STAGE ;
 						}else 
@@ -377,18 +379,18 @@ void vADC_UPDATETask(void *argument)
 						}
 					
 					} //小于六百是台下
-				else if (L_huidu >= 600  &&  R_huidu >= 700)
+				else if (L_huidu >= ARENA_GRAY_ON_STAGE_L_MIN  &&  R_huidu >= ARENA_GRAY_ON_STAGE_R_MIN)
 				{
 					
-						if( QIAN_L_JG <= 180 &&
-							  QIAN_R_JG <= 180 &&  
-							( L_JG <= 1000  ||  R_JG <=1000 )    &&
-								L_JG_60    <= 600                  &&
-								R_JG_60    <= 600                  
+						if( QIAN_L_JG <= JG_START_ZONE_FRONT &&
+							  QIAN_R_JG <= JG_START_ZONE_FRONT &&
+							( L_JG <= JG_START_ZONE_SIDE  ||  R_JG <= JG_START_ZONE_SIDE )    &&
+								L_JG_60    <= JG_START_ZONE_SIDE_60                  &&
+								R_JG_60    <= JG_START_ZONE_SIDE_60
 						  )
 						{
-								CAR_STATUS = OFF_STAGE; 
-								if ( B_JG >= 700 )
+								CAR_STATUS = OFF_STAGE;
+								if ( B_JG >= JG_BACK_CLEAR )
 								{
 									START_ZONE_flag = 1; //可以直接上台
 								}else
@@ -403,21 +405,21 @@ void vADC_UPDATETask(void *argument)
 						}
 					
 						//左边黑色右边出发区
-				}else   if(   (L_huidu < 650 &&  L_huidu > 300 )  
-									 && (R_huidu >= 700)  
+				}else   if(   (L_huidu < ARENA_GRAY_OFF_STAGE_L_MAX &&  L_huidu > ARENA_GRAY_OFF_STAGE_MIN )
+									 && (R_huidu >= ARENA_GRAY_ON_STAGE_R_MIN)
 									)
 				{
-					
-						if( QIAN_L_JG <= 300 &&
-							  QIAN_R_JG <= 300 &&  
-							( L_JG <= 1000  ||  R_JG <=1000 )    &&
-								L_JG_60    <= 650                  &&
-								R_JG_60    <= 650                  
+
+						if( QIAN_L_JG <= JG_START_ZONE_FRONT_ALT &&
+							  QIAN_R_JG <= JG_START_ZONE_FRONT_ALT &&
+							( L_JG <= JG_START_ZONE_SIDE  ||  R_JG <= JG_START_ZONE_SIDE )    &&
+								L_JG_60    <= JG_START_ZONE_SIDE_60_ALT                  &&
+								R_JG_60    <= JG_START_ZONE_SIDE_60_ALT
 						  )
 						{
 								CAR_STATUS = OFF_STAGE; 
 							
-								if ( B_JG >= 700 )
+								if ( B_JG >= JG_BACK_CLEAR )
 								{ 
 									START_ZONE_flag = 1; //可以直接上台
 								}else
@@ -426,15 +428,15 @@ void vADC_UPDATETask(void *argument)
 								} 
 						}
 						//右边黑色左边出发区
-				}else   if(  (R_huidu   < 700 &&  R_huidu  > 300 ) 
-									 &&(  L_huidu >= 600 )  
+				}else   if(  (R_huidu   < ARENA_GRAY_OFF_STAGE_R_MAX &&  R_huidu  > ARENA_GRAY_OFF_STAGE_MIN )
+									 &&(  L_huidu >= ARENA_GRAY_ON_STAGE_L_MIN )
 									)
 				{
-						if( QIAN_L_JG <= 180 &&
-							  QIAN_R_JG <= 180 &&  
-							( L_JG <= 1000  ||  R_JG <=1000 )    &&
-								L_JG_60    <= 600                  &&
-								R_JG_60    <= 600                  
+						if( QIAN_L_JG <= JG_START_ZONE_FRONT &&
+							  QIAN_R_JG <= JG_START_ZONE_FRONT &&
+							( L_JG <= JG_START_ZONE_SIDE  ||  R_JG <= JG_START_ZONE_SIDE )    &&
+								L_JG_60    <= JG_START_ZONE_SIDE_60                  &&
+								R_JG_60    <= JG_START_ZONE_SIDE_60
 						  )
 						{  
 								CAR_STATUS = OFF_STAGE; 
@@ -450,22 +452,22 @@ void vADC_UPDATETask(void *argument)
 		{
 			if(ZHUIJI_TIME > 0)
 			{
-			ZHUIJI_TIME -= 5;
+			ZHUIJI_TIME -= ZHUIJI_TIME_STEP;
 			}else 
 			{
-				ZHUIJI_TIME =1500;
+				ZHUIJI_TIME = ZHUIJI_TIME_DEFAULT;
 				ZHUIJI_Flag = 0;
 			}
 		}
-		if( __fabs(IMU_DATA.roll ) >=15)
+		if( __fabs(IMU_DATA.roll ) >= IMU_ROLL_BETWEEN_STAGE)
 		{
 				between_STAGE_COUNT++;
-			  if(  between_STAGE_COUNT == 400 )
+			  if(  between_STAGE_COUNT == BETWEEN_STAGE_COUNT_THRES )
 				{
 					CAR_STATUS = BETWEEN_STAGE;
 					between_STAGE_COUNT=0;
 				}
-		}else if(__fabs(IMU_DATA.roll ) <= 5  )
+		}else if(__fabs(IMU_DATA.roll ) <= IMU_ROLL_RECOVERY  )
 		{
 					between_STAGE_COUNT=0;
 		}

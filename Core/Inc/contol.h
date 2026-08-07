@@ -2,6 +2,7 @@
 #define CONTOL_H
 
 #include "RS485.h"
+#include "arena_config.h"
 
 typedef struct {
     float normalized;  // 归一化角度 [0, 360)

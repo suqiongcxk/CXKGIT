@@ -9,9 +9,10 @@
 #include "stdio.h"
 #include "remote_contol.h"
 #include  "JY901S.h"
-  /*git 脚本 
+#include "arena_config.h"
+  /*git 脚本
   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-  .\git-push.ps1
+  .\git-push.ps1    //每天都要上传
   */
 extern JY901S_AngleData IMU_DATA;
 AngleWithRotation   TURN_ANGLE;
@@ -40,7 +41,6 @@ volatile int stage_check_flag = 1;
 #define  weight_60     65  
 #define  weight_90     90 
 #define  weight_120    90 
-#define  ON_satge_wait_time  300
 #define roximal_Alignment_JIGUANG_GAIN   4
 #define Bomb_CUBE   2 //炸弹块
 uint8_t ZHUIJI_Flag  = 0;
@@ -52,20 +52,13 @@ uint8_t STAGE_UP_CONFIRMED = 1;  //初始假设在台上，掉下后清除
 uint8_t backing_attempt = 0;
 //检测
 volatile int xuanzhuan_count = 2000; //每次触发追击就把它重置
-#define EDGE_JG_L_VALUE  460 
-#define EDGE_JG_R_VALUE  460 
-#define L_huidu_VALUE    1200
-#define R_huidu_VALUE    1200
-#define HUIDU_GAIN       1.4//灰度补偿系数
-#define BLUE_HUIDU       1850
-#define xuanzhuan_VALUE  2000  //自转模式的时间
-#define EDGE_VAlue       500
+/* 灰度/边缘阈值已迁移至 arena_config.h */
 void  edge_check ( void )
 {
 	edge = 0;
-	if (QIAN_L_JG >= 550 || QIAN_R_JG >= 550)
+	if (QIAN_L_JG >= JG_EDGE_DETECT_ENTRY || QIAN_R_JG >= JG_EDGE_DETECT_ENTRY)
 	{ 
-			if( L_huidu > L_huidu_VALUE && R_huidu * HUIDU_GAIN > R_huidu_VALUE &&	ZHUIJI_Flag== 0 )//不在角落并且没有触发追击的话的时候用激光
+			if( L_huidu > ARENA_GRAY_L_HUIDU_VALUE && R_huidu * ARENA_GRAY_HUIDU_GAIN > ARENA_GRAY_R_HUIDU_VALUE &&	ZHUIJI_Flag== 0 )//不在角落并且没有触发追击的话的时候用激光
 			{
 			
 				if( (EDGE_JG_L >= EDGE_JG_L_VALUE  )|| (EDGE_JG_R >= EDGE_JG_R_VALUE ) )
@@ -75,7 +68,7 @@ void  edge_check ( void )
 				}
 			}else //在角落的或者触发追击时候用灰度，灰度小于200的话算边缘
 			{
-				if( L_huidu <= 200 ||  R_huidu <= 200)
+				if( L_huidu <= ARENA_GRAY_EDGE_DARK ||  R_huidu <= ARENA_GRAY_EDGE_DARK)
 				{
 					
 					edge = 2;  //个位赋值为2  
@@ -83,7 +76,7 @@ void  edge_check ( void )
 			}
 	}else  //前方全被物块遮挡了
 	{
-		if( L_huidu <= 200 ||  R_huidu <= 200)
+		if( L_huidu <= ARENA_GRAY_EDGE_DARK ||  R_huidu <= ARENA_GRAY_EDGE_DARK)
 		{
 			
 					edge = 3;  //个位赋值为3
@@ -94,15 +87,15 @@ void  edge_check ( void )
 	{
 		if(SSQ_TYPE == 5 || SSQ_TYPE == 0)
 		{
-					if( QIAN_L_JG <= 650  && QIAN_R_JG <= 650  )
+					if( QIAN_L_JG <= JG_BOTH_BLOCKED  && QIAN_R_JG <= JG_BOTH_BLOCKED  )
 					{
 							edge += 40;  //前面两个都被遮挡了，十位赋值位4
 							
-					}else if (QIAN_L_JG <= 650  && QIAN_R_JG >= 650 )
+					}else if (QIAN_L_JG <= JG_BOTH_BLOCKED  && QIAN_R_JG >= 650 )
 					{
 						edge += 50;//左边被遮挡了，十位赋值位5
 					
-					}else if(  QIAN_L_JG >= 650  && QIAN_R_JG <= 650 ) 
+					}else if(  QIAN_L_JG >= JG_BOTH_BLOCKED  && QIAN_R_JG <= JG_BOTH_BLOCKED ) 
 					{
 						edge  += 60;//右边被遮挡了，十位赋值位6
 					}
@@ -148,8 +141,8 @@ void  edge_MOVE(void )
 	uint16_t B_AVE = 0;
 	F_AVE = L_huidu + R_huidu; 
 	B_AVE = B_L_Hui + B_R_HUI;
-	if(L_huidu < 200 ) {F_AVE = 2* R_huidu ;}
-	if(R_huidu < 200 ) {F_AVE = 2* L_huidu ;}
+	if(L_huidu < ARENA_GRAY_EDGE_DARK ) {F_AVE = 2* R_huidu ;}
+	if(R_huidu < ARENA_GRAY_EDGE_DARK ) {F_AVE = 2* L_huidu ;}
 	
 	if(ZHUIJI_Flag != 0)//进入追击模式了，只有灰度探测到才会边缘检测
 	{
@@ -159,7 +152,7 @@ void  edge_MOVE(void )
 			}
 	}
 	
-	if( (F_AVE  > B_AVE   ) &&  (F_AVE/2<1300  ))//前面颜色浅，后面颜色深
+	if( (F_AVE  > B_AVE   ) &&  (F_AVE/2 < ARENA_GRAY_FRONT_BACK_MID  ))//前面颜色浅，后面颜色深
 	{
 	switch( edge /10 )
 	{
@@ -256,18 +249,18 @@ void  Enemy_search(void)
 	//传感器触发计数
 	uint8_t R_SENSOR_CNT = 0;
 	uint8_t L_SENSOR_CNT = 0;
-	if(L_huidu>2500 && R_huidu>2500)
+	if(L_huidu>ARENA_GRAY_LIGHT_AREA && R_huidu>ARENA_GRAY_LIGHT_AREA)
 	{
-			if(QIAN_L_JG <= 800){zizhaun_flag[0] = 1;} 
-			if(QIAN_R_JG <= 800){zizhaun_flag[1] = 1;}
+			if(QIAN_L_JG <= JG_FRONT_LIGHT){zizhaun_flag[0] = 1;}
+			if(QIAN_R_JG <= JG_FRONT_LIGHT){zizhaun_flag[1] = 1;}
 	}else 
 	{
-		if(QIAN_L_JG <= 650){zizhaun_flag[0] = 1;} 
-	if(QIAN_R_JG <= 650){zizhaun_flag[1] = 1;}
+		if(QIAN_L_JG <= JG_FRONT_DARK){zizhaun_flag[0] = 1;}
+	if(QIAN_R_JG <= JG_FRONT_DARK){zizhaun_flag[1] = 1;}
 	}
 
 	
-	if( (B_JG_LEFT <600 || B_JG_RIGHT <600  ) && ( QIAN_L_JG >600 && QIAN_R_JG >600 ) && TURN_BACK_ENABLE )
+	if( (B_JG_LEFT < JG_BACK_DARK || B_JG_RIGHT < JG_BACK_DARK  ) && ( QIAN_L_JG > JG_SEARCH_ENTRY_FRONT && QIAN_R_JG > JG_SEARCH_ENTRY_FRONT ) && TURN_BACK_ENABLE )
 	{  
 			if(Enemy_search_scilence_CNT <= 0) //每次转向静默200ms
 		{
@@ -276,12 +269,12 @@ void  Enemy_search(void)
 		osDelay(100);
 		TURN_ZIZHUAN(170);
 		Enemy_search_mode = zizhuan_mode;  
-		xuanzhuan_count = xuanzhuan_VALUE;	
+		xuanzhuan_count = XUANZHUAN_VALUE;	
 		move(0,0);  
 		osDelay(100);
-		Enemy_search_scilence_CNT = 100; //80
+		Enemy_search_scilence_CNT = SEARCH_SILENCE_CNT; //80
 		Enemy_search_mode = zizhuan_mode;  
-		xuanzhuan_count = xuanzhuan_VALUE;
+		xuanzhuan_count = XUANZHUAN_VALUE;
 		}
 	}
 	
@@ -292,14 +285,14 @@ void  Enemy_search(void)
 			TURN_ZIZHUAN(170);
 			STOP();
 			osDelay(200);
-			TURN_BACK_COUNT = 2000;
+			TURN_BACK_COUNT = ZHUIJI_TURN_BACK_COUNT;
 			TURN_BACK_ENABLE = 0;
 		}
 		Enemy_search_mode = zizhuan_mode;  
-		xuanzhuan_count = xuanzhuan_VALUE;	 
+		xuanzhuan_count = XUANZHUAN_VALUE;	 
 		
 
-				if(L_huidu + R_huidu >=BLUE_HUIDU*2)
+				if(L_huidu + R_huidu >=ARENA_GRAY_BLUE*2)
 		{
 		move( 400,500);
 		}else 
@@ -313,10 +306,10 @@ void  Enemy_search(void)
 			TURN_ZIZHUAN(170);
 			STOP();
 			osDelay(200);
-			TURN_BACK_COUNT = 2000;
+			TURN_BACK_COUNT = ZHUIJI_TURN_BACK_COUNT;
 			TURN_BACK_ENABLE = 0;
 		}
-		if(L_huidu + R_huidu >=BLUE_HUIDU*2)
+		if(L_huidu + R_huidu >=ARENA_GRAY_BLUE*2)
 		{
 			move(500 , 400);
 		}else 
@@ -325,32 +318,32 @@ void  Enemy_search(void)
 		}
 
 		Enemy_search_mode = zizhuan_mode;  
-		xuanzhuan_count = xuanzhuan_VALUE;
+		xuanzhuan_count = XUANZHUAN_VALUE;
 	}
 	 if (zizhaun_flag[0] == 0 && zizhaun_flag[1] == 0)
 	{
 			//在代码的23行开关
 
-			if(L_huidu>2500 && R_huidu>2500)
+			if(L_huidu>ARENA_GRAY_LIGHT_AREA && R_huidu>ARENA_GRAY_LIGHT_AREA)
 			{
-				if(L_JG <= 800){zizhaun_flag[2] = -1;}
-				if(R_JG <= 800)   {zizhaun_flag[6] = 1;}
-				if(L_JG_30 <= 800){zizhaun_flag[3] = -1; }
-			  if(L_JG_60 <= 800){zizhaun_flag[4] = -1;}
+				if(L_JG <= JG_SIDE_LIGHT){zizhaun_flag[2] = -1;}
+				if(R_JG <= JG_SIDE_LIGHT)   {zizhaun_flag[6] = 1;}
+				if(L_JG_30 <= JG_SIDE_30_LIGHT){zizhaun_flag[3] = -1; }
+			  if(L_JG_60 <= JG_SIDE_60_LIGHT){zizhaun_flag[4] = -1;}
 
-				if(R_JG_30 <= 800){ zizhaun_flag[7] = 1;} 
-				if(R_JG_60 <= 800){zizhaun_flag[8] = 1;}
+				if(R_JG_30 <= JG_SIDE_30_LIGHT){ zizhaun_flag[7] = 1;} 
+				if(R_JG_60 <= JG_SIDE_60_LIGHT){zizhaun_flag[8] = 1;}
 				
 				
 			}
 			else 
 			{
-				if(L_JG <= 600){zizhaun_flag[2] = -1;}
-				if(R_JG <= 600)   {zizhaun_flag[6] = 1;}
-				if(L_JG_30 <= 600){zizhaun_flag[3] = -1; } 
-			  if(L_JG_60 <= 600){zizhaun_flag[4] = -1;}
-				if(R_JG_30 <= 600){ zizhaun_flag[7] = 1;} 
-				if(R_JG_60 <= 600){zizhaun_flag[8] = 1;}
+				if(L_JG <= JG_SIDE_DARK){zizhaun_flag[2] = -1;}
+				if(R_JG <= JG_SIDE_DARK)   {zizhaun_flag[6] = 1;}
+				if(L_JG_30 <= JG_SIDE_30_DARK){zizhaun_flag[3] = -1; } 
+			  if(L_JG_60 <= JG_SIDE_60_DARK){zizhaun_flag[4] = -1;}
+				if(R_JG_30 <= JG_SIDE_30_DARK){ zizhaun_flag[7] = 1;}
+				if(R_JG_60 <= JG_SIDE_60_DARK){zizhaun_flag[8] = 1;}
 			}
 
 //			if(R_JG_120 <= 600){zizhaun_flag[9] = 1;}		
@@ -371,9 +364,9 @@ void  Enemy_search(void)
 		turn_angle = 0;
 		*/
 		 
-		if(L_huidu>2500 && R_huidu>2500)
+		if(target_velocity_1[0] >= TURN_ANGLE_ATTEN_SPEED_THRESH && target_velocity_2[0] >= TURN_ANGLE_ATTEN_SPEED_THRESH)
 		{
-			turn_angle= turn_angle*0.58f;
+			turn_angle= turn_angle*ARENA_GRAY_TURN_ANGLE_ATTEN;
 		}
 		if(  turn_angle != 0)
 		{
@@ -386,18 +379,18 @@ void  Enemy_search(void)
 				{
 					TURN_ZIZHUAN(turn_angle);
 					turn_angle= 0;
-					Enemy_search_scilence_CNT = 100; //80
+					Enemy_search_scilence_CNT = SEARCH_SILENCE_CNT; //80
 					Enemy_search_mode = zizhuan_mode;  
-					xuanzhuan_count = xuanzhuan_VALUE;
+					xuanzhuan_count = XUANZHUAN_VALUE;
 				}
 			} 
 		}else if (Enemy_search_mode == pianzhuan_mode)
 		{
 					TURN_ZIZHUAN(turn_angle);
 					turn_angle= 0;
-					Enemy_search_scilence_CNT = 100; //80
+					Enemy_search_scilence_CNT = SEARCH_SILENCE_CNT; //80
 					Enemy_search_mode = zizhuan_mode;
-					xuanzhuan_count = xuanzhuan_VALUE;
+					xuanzhuan_count = XUANZHUAN_VALUE;
 
 		}
 		
@@ -413,7 +406,7 @@ void  Enemy_search(void)
 			TURN_ZIZHUAN(170);
 			STOP();
 			osDelay(200);
-			TURN_BACK_COUNT = 2000;
+			TURN_BACK_COUNT = ZHUIJI_TURN_BACK_COUNT;
 			TURN_BACK_ENABLE = 0;
 		}
 				if(roaming_veocity_STR  > 300 )
@@ -424,7 +417,7 @@ void  Enemy_search(void)
 						move(roaming_veocity_STR , roaming_veocity_STR );
 				}
 			Enemy_search_mode = zizhuan_mode;  
-			xuanzhuan_count = xuanzhuan_VALUE;
+			xuanzhuan_count = XUANZHUAN_VALUE;
 	}
 }
        
@@ -502,8 +495,8 @@ void  taishangroaming   (void)
 //把速度值乘以0.71就是cm每秒的速度
 void move(float LEFT , float RIGHT )
 {
-	LEFT =   My_constrain(LEFT,-0.7*RPM_MAX,0.7*RPM_MAX)  ;
-	RIGHT =  My_constrain(RIGHT,-0.7*RPM_MAX,0.7*RPM_MAX) ;
+	LEFT =   My_constrain(LEFT,-0.8*RPM_MAX,0.8*RPM_MAX)  ;
+	RIGHT =  My_constrain(RIGHT,-0.8*RPM_MAX,0.8*RPM_MAX) ;
 //	LEFT*= 0.5;
 //	RIGHT*= 0.5;
 //	
@@ -547,30 +540,30 @@ void TURN_PIANZHUAN ( int direct  ,int angle)
 	
 		if(direct > 0)
 		{
-			move(600,150);
-		}else 
+			move(PIANZHUAN_SPEED_FAST, PIANZHUAN_SPEED_SLOW);
+		}else
 		{
-			move(150,600);
+			move(PIANZHUAN_SPEED_SLOW, PIANZHUAN_SPEED_FAST);
 		}
 		uint32_t TIM_START = TIM2->CNT;
 		uint32_t time_count = 0;
-		if(turn_angle >= 50)
+		if(turn_angle >= PIANZHUAN_LARGE_ANGLE)
 		{
-			time_count= 700000;
-		}else 
+			time_count= PIANZHUAN_LARGE_TIME;
+		}else
 		{
-			time_count= 350000; 
+			time_count= PIANZHUAN_SMALL_TIME;
 		}
 		while( TIM2->CNT <  TIM_START + time_count )
 		{
 					edge_check();
-					
+
 			if(edge != 0)
 			{
 				edge_MOVE();
 				break;
 			}
-				if( QIAN_L_JG <= 600 || QIAN_R_JG <=600)
+				if( QIAN_L_JG <= PIANZHUAN_BLOCK_THRESH || QIAN_R_JG <= PIANZHUAN_BLOCK_THRESH)
 				{
 					break;
 				}
@@ -582,7 +575,7 @@ void TURN_PIANZHUAN ( int direct  ,int angle)
 		*/
 		//偏转完成之后变成自传
 		Enemy_search_mode = zizhuan_mode;
-		xuanzhuan_count = xuanzhuan_VALUE;
+		xuanzhuan_count = XUANZHUAN_VALUE;
 }
 
 
@@ -614,27 +607,27 @@ void TURN_ZIZHUAN (float degree)
     float TARGET_degree = UpdateAngleWithRotation(IMU_DATA.yaw, degree, Rotation);
     
     // 开环加速阶段（根据degree符号决定方向）
-    float open_loop_speed = (degree > 0) ? 700 : -700;
+    float open_loop_speed = (degree > 0) ? ZIZHUAN_OPEN_LOOP_SPEED : -ZIZHUAN_OPEN_LOOP_SPEED;
     move(open_loop_speed, -open_loop_speed);
-    
-    float FIRST_TIME = -0.001667f*  fabs(degree)* fabs(degree) + 1.8167f*fabs(degree) + 15;
+
+    float FIRST_TIME = ZIZHUAN_FIRST_TIME_A * fabs(degree)* fabs(degree) + ZIZHUAN_FIRST_TIME_B * fabs(degree) + ZIZHUAN_FIRST_TIME_C;
     osDelay(FIRST_TIME);
 		uint32_t  wait_time = 0;
 		if(CAR_STATUS == OFF_STAGE)
 		{
-			wait_time = 600000;
+			wait_time = ZIZHUAN_PID_TIMEOUT;
     // PID闭环阶段（统一逻辑，无需区分正负） 
     while(1)
     {
         NOW_DEGERR = IMU_DATA.yaw + 360 * Rotation;
         
         if(TIM2->CNT > TURN_PID_START + wait_time || 
-           fabs(NOW_DEGERR - TARGET_degree) <= 1)
+           fabs(NOW_DEGERR - TARGET_degree) <= ZIZHUAN_PID_TOLERANCE)
         break;
         
         turn_velocity = LV1_PID_BACK(&IMU_PID, NOW_DEGERR, TARGET_degree);
-        turn_velocity = fabs(turn_velocity) >= 0.6*RPM_MAX ? 
-                        (turn_velocity >= 0 ? 0.6*RPM_MAX : -0.6*RPM_MAX) : turn_velocity;
+        turn_velocity = fabs(turn_velocity) >= ZIZHUAN_SPEED_LIMIT * RPM_MAX ? 
+                        (turn_velocity >= 0 ? ZIZHUAN_SPEED_LIMIT * RPM_MAX : -ZIZHUAN_SPEED_LIMIT * RPM_MAX) : turn_velocity;
         move(turn_velocity, -turn_velocity);
     }
 		}
@@ -650,21 +643,21 @@ void OPEN_LOOP_90_LOW_V( int angle )
 {
 		if(angle == 90)
 		{
-			move(500,-500);
-			osDelay(170);
+			move(LOWV_90_SPEED, -LOWV_90_SPEED);
+			osDelay(LOWV_90_TIME);
 		}else if(angle == -90)
 		{
-			move(-500,500);
-			osDelay(170);
+			move(-LOWV_90_SPEED, LOWV_90_SPEED);
+			osDelay(LOWV_90_TIME);
 		}
 		else if(angle == -60)
 		{
-			move(-400,400);
-			osDelay(130);
+			move(-LOWV_60_SPEED, LOWV_60_SPEED);
+			osDelay(LOWV_60_TIME);
 		}else if(angle == 60)
 		{
-			move(400,-400);
-			osDelay(130);
+			move(LOWV_60_SPEED, -LOWV_60_SPEED);
+			osDelay(LOWV_60_TIME);
 		}
 		STOP();
 		osDelay(300);
@@ -691,15 +684,15 @@ void TURN__taixia( float  degree)
         NOW_DEGERR = IMU_DATA.yaw + 360 * Rotation;
         
         if(TIM2->CNT > TURN_PID_START + 1000000 || 
-           fabs(NOW_DEGERR - TARGET_degree) <= 1)
+           fabs(NOW_DEGERR - TARGET_degree) <= ZIZHUAN_PID_TOLERANCE)
         break;
         
         turn_velocity = LV1_PID_BACK(&IMU_PID, NOW_DEGERR, TARGET_degree);
-        turn_velocity = fabs(turn_velocity) >= 0.4f*RPM_MAX ? 
-                        (turn_velocity >= 0 ? 0.4f*RPM_MAX : -0.4f*RPM_MAX) : turn_velocity;
+        turn_velocity = fabs(turn_velocity) >= ZIZHUAN_TAIXIA_SPEED_LIMIT * RPM_MAX ? 
+                        (turn_velocity >= 0 ? ZIZHUAN_TAIXIA_SPEED_LIMIT * RPM_MAX : -ZIZHUAN_TAIXIA_SPEED_LIMIT * RPM_MAX) : turn_velocity;
 				
-        turn_velocity = fabs(turn_velocity) <= 0.005f*RPM_MAX ? 
-                        (turn_velocity >= 0 ? 0.005f*RPM_MAX : -0.005f*RPM_MAX) : turn_velocity;
+        turn_velocity = fabs(turn_velocity) <= ZIZHUAN_TAIXIA_MIN_SPEED * RPM_MAX ? 
+                        (turn_velocity >= 0 ? ZIZHUAN_TAIXIA_MIN_SPEED * RPM_MAX : -ZIZHUAN_TAIXIA_MIN_SPEED * RPM_MAX) : turn_velocity;
         move(turn_velocity, -turn_velocity);
     }
 
@@ -741,7 +734,7 @@ void walk_backward_TIME(int16_t BACK_Velocity,uint32_t us )
 		taixia_start = TIM2->CNT;
 	while(TIM2->CNT - taixia_start < us && CAR_STATUS != ON_STAGE )   //时间结束或者不在台下截至
 		{
-				if(L_huidu + R_huidu > 3400)
+				if(L_huidu + R_huidu > ARENA_GRAY_BACK_ON_STAGE)
 				{
 					osDelay(200);
 					break;
@@ -829,23 +822,23 @@ void  Anti_pursuit_Algorithm  ( void )
 	
 	float Anti_pur_Al_cm = 0;  //反追击距离
 	
-		if( B_JG  <= 650 && CAR_STATUS == OFF_STAGE)  //辟谷后面有敌人或者障碍
+		if( B_JG <= JG_BACK_ENEMY && CAR_STATUS == OFF_STAGE)  //辟谷后面有敌人或者障碍
 	{
 		TURN__taixia(180);
-		move(250,250);
-		osDelay(550);
+		move(ANTI_PURSUIT_ESCAPE_SPEED, ANTI_PURSUIT_ESCAPE_SPEED);
+		osDelay(ANTI_PURSUIT_ESCAPE_TIME);
 	}
-	if( B_JG  <= 650 && CAR_STATUS == OFF_STAGE)  //辟谷后面有敌人或者障碍
+	if( B_JG <= JG_BACK_ENEMY && CAR_STATUS == OFF_STAGE)  //辟谷后面有敌人或者障碍
 	{
 		
 		Continuous_Occlusion_Count++; //第二次遮挡
-		move(250,250);
-		osDelay(550);
+		move(ANTI_PURSUIT_ESCAPE_SPEED, ANTI_PURSUIT_ESCAPE_SPEED);
+		osDelay(ANTI_PURSUIT_ESCAPE_TIME);
 		move(0,0);
 		osDelay(200);
 		int Anti_pur_Al_DIR = ( L_JG <= R_JG ) ? 1 : -1;
-		if( L_JG <= R_JG )		Anti_pur_Al_cm = (2500 - L_JG)/10;   //到擂台边缘上台			
-		if( L_JG > R_JG )	  	Anti_pur_Al_cm = (2500 - R_JG)/10;   //到擂台边缘上台		
+		if( L_JG <= R_JG )		Anti_pur_Al_cm = (JG_ARENA_EDGE_DIST - L_JG)/10;   //到擂台边缘上台			
+		if( L_JG > R_JG )	  	Anti_pur_Al_cm = (JG_ARENA_EDGE_DIST - R_JG)/10;   //到擂台边缘上台		
 		move(-300,-300); 
 		osDelay(250);	   
 		
@@ -854,7 +847,7 @@ void  Anti_pursuit_Algorithm  ( void )
 		
 		OPEN_LOOP_90_LOW_V(Anti_pur_Al_DIR*90);
 		osDelay(200);
-		if(QIAN_L_JG >=700 && QIAN_R_JG >= 700  && CAR_STATUS == OFF_STAGE)
+		if(QIAN_L_JG >= JG_ANTI_PURSUIT_FRONT && QIAN_R_JG >= JG_ANTI_PURSUIT_FRONT  && CAR_STATUS == OFF_STAGE)
 		{
 				walk_CM(Anti_pur_Al_cm);
 				TURN__taixia(-Anti_pur_Al_DIR*90);
@@ -862,15 +855,15 @@ void  Anti_pursuit_Algorithm  ( void )
 		}
 		
 		Continuous_Occlusion_Count = 0;
-	}else if( B_JG > 650 &&CAR_STATUS == OFF_STAGE )  //空了，那就后退吧
+	}else if( B_JG > JG_BACK_ENEMY &&CAR_STATUS == OFF_STAGE )  //空了，那就后退吧
 	{
 			backing_attempt = 1;  //标记：正在后退上台
-			walk_backward_TIME(-0.4 * RPM_MAX,1600000);
+			walk_backward_TIME(-ANTI_PURSUIT_BACK_SPEED * RPM_MAX, ANTI_PURSUIT_BACK_TIME);
 
 		if( CAR_STATUS == ON_STAGE )
 		{		TURN_ZIZHUAN(160);  }      
 		STOP();
-		osDelay(ON_satge_wait_time);		
+		osDelay(ON_STAGE_WAIT_TIME);		
 			backing_attempt = 0;	//后退结束，清除标志
 	}
 		 
@@ -880,7 +873,7 @@ void roximal_Alignment (uint32_t TIME)
 {
 	
 	int direction = 0;
-	if(QIAN_L_JG <= 800 && QIAN_R_JG <= 800)
+	if(QIAN_L_JG <= JG_SIDE_LIGHT && QIAN_R_JG <= JG_SIDE_LIGHT)
 	{
 		direction =	(QIAN_L_JG > QIAN_R_JG ) ? 1 : -1;
 	}else 
@@ -890,18 +883,18 @@ void roximal_Alignment (uint32_t TIME)
 	
 	uint32_t  ROX_ALI_SATRT = 0 ;
 	ROX_ALI_SATRT = TIM2->CNT;
-		while (!(QIAN_L_JG <300&& QIAN_R_JG <300&& __fabs (QIAN_L_JG-QIAN_R_JG)<25) ) {
+		while (!(QIAN_L_JG < JG_ROX_FRONT_CLOSE && QIAN_R_JG < JG_ROX_FRONT_CLOSE && __fabs (QIAN_L_JG-QIAN_R_JG) < JG_ROX_ALIGN_TOLERANCE) ) {
 			if (CAR_STATUS == ON_STAGE ) {
 					break;
 			}
 			if( TIM2->CNT  - ROX_ALI_SATRT >TIME) 
 			{
-				if(QIAN_L_JG > 500 && QIAN_R_JG > 500)
+				if(QIAN_L_JG > JG_ROX_FRONT_NEAR && QIAN_R_JG > JG_ROX_FRONT_NEAR)
 				{
-				walk_backward_TIME(0.3f * RPM_MAX,300000);  	
+				walk_backward_TIME(JG_ROX_BACK_SPEED_FACTOR * RPM_MAX, JG_ROX_BACK_TIME);  	
 				}else 
 				{
-				walk_backward_TIME(-0.15f * RPM_MAX,300000);  	
+				walk_backward_TIME(-JG_ROX_FWD_SPEED_FACTOR * RPM_MAX, JG_ROX_BACK_TIME);  	
 				}
 
 				break;
@@ -916,7 +909,7 @@ void roximal_Alignment (uint32_t TIME)
 
 //					turn_speed = My_constrain(turn_speed,-0.2*RPM_MAX,0.2*RPM_MAX );
 
-					move(150 * direction, - 150 * direction);
+					move(JG_ROX_TURN_SPEED * direction, -JG_ROX_TURN_SPEED * direction);
 			
 	}
 		
@@ -931,7 +924,7 @@ void FAR_Alignment (uint32_t TIME ,int DIR)
 {
 	uint32_t  ROX_ALI_SATRT = 0 ;
 	ROX_ALI_SATRT = TIM2->CNT;
-		while (!(QIAN_L_JG + QIAN_R_JG >2400) ) {
+		while (!(QIAN_L_JG + QIAN_R_JG > JG_FAR_TARGET) ) {
 			if (CAR_STATUS == ON_STAGE ) 
 			{
 					break;
@@ -940,7 +933,7 @@ void FAR_Alignment (uint32_t TIME ,int DIR)
 			{
 				break;
 			}
-					move(200 * DIR, - 200 * DIR); 
+					move(JG_FAR_TURN_SPEED * DIR, -JG_FAR_TURN_SPEED * DIR); 
 	}
 		
 		STOP();
@@ -981,14 +974,14 @@ void  taixia (void )
 			START_ZONE_flag = 0;
 	}
 	
-	if(L_JG >900 &&  R_JG >900 && B_JG > 700   && ( QIAN_L_JG  + QIAN_R_JG < 1000) )  //在过道中间，正背对擂台的话
+	if(L_JG > JG_TAIXIA_CORRIDOR_SIDE &&  R_JG > JG_TAIXIA_CORRIDOR_SIDE && B_JG > JG_BACK_CLEAR   && ( QIAN_L_JG  + QIAN_R_JG < JG_TAIXIA_FRONT_SUM) )  //在过道中间，正背对擂台的话
 	{ 
 			backing_attempt = 1;  //标记：正在后退上台
-			walk_backward_TIME(-0.40 * RPM_MAX,1400000);
+			walk_backward_TIME(-JG_TAIXIA_BACK_SPEED * RPM_MAX, JG_TAIXIA_BACK_TIME);
 		
 		if( CAR_STATUS == ON_STAGE ){TURN_ZIZHUAN(160) ;}
 		STOP();						
-		osDelay(ON_satge_wait_time);
+		osDelay(ON_STAGE_WAIT_TIME);
 			backing_attempt = 0;	//后退结束，清除标志
 		
 	}else 
@@ -1001,9 +994,9 @@ void  taixia (void )
 		
 		}
 
-		if (B_JG <= 700 && CAR_STATUS == OFF_STAGE) //背后有墙
+		if (B_JG <= JG_BACK_WALL && CAR_STATUS == OFF_STAGE) //背后有墙
 		{ 
-				if(L_JG + R_JG >1700)
+				if(L_JG + R_JG > JG_TAIXIA_SIDE_SUM_LARGE)
 				{
 						TURN__taixia (180);	
 				}else 
@@ -1023,7 +1016,7 @@ void  taixia (void )
 			osDelay(300);
 			}
 		}
-				if(QIAN_L_JG <= 200 && QIAN_R_JG <=200 && (__fabs(QIAN_L_JG - QIAN_R_JG) <25)  )
+				if(QIAN_L_JG <= JG_TAIXIA_ALIGN_CLOSE && QIAN_R_JG <= JG_TAIXIA_ALIGN_CLOSE && (__fabs(QIAN_L_JG - QIAN_R_JG) < JG_TAIXIA_ALIGN_DIFF)  )
 		{
 			if(   L_JG  <250 || R_JG  <250  )
 			{

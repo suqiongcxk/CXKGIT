@@ -120,7 +120,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /*git 脚本 
   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-  .\git-push.ps1
+  .\git-push.ps1    //每天都要上传
   */
 	HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start(&htim2);	//485定时器初始化
