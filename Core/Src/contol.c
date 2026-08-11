@@ -99,13 +99,13 @@ void  edge_check ( void )
 					{
 						edge  += 60;//右边被遮挡了，十位赋值位6
 					}
-		}else if(SSQ_TYPE == 3 && X_LOCATION != 0)
+		}else if(SSQ_TYPE == 4 && X_LOCATION != 0)
 		{
 					//敌方战车在台下：用摄像头X坐标判断堵台位置
-					if(X_LOCATION < 270)
+					if(X_LOCATION < 290)
 					{
 						edge += 50;  //敌人在左侧
-					}else if(X_LOCATION > 370)
+					}else if(X_LOCATION > 350)
 					{
 						edge += 60;  //敌人在右侧
 					}else
@@ -113,7 +113,7 @@ void  edge_check ( void )
 						edge += 40;  //敌人在中间
 					}
 		}
-		//SSQ_TYPE == 2(炸弹) 或 == 4(方块)：不触发遮挡，不堵
+		//SSQ_TYPE == 2(炸弹) 或 == 3(方块)：不触发遮挡，不堵
 
 	}
 
@@ -948,11 +948,13 @@ void  taixia (void )
 	{
 				move(200,200);
 				osDelay(500);
+				backing_attempt = 1;
 				move(-400,-400);
 				osDelay(200);
 				move(-400,-500);
 				osDelay(700);
 			  TURN_ZIZHUAN(160);
+				backing_attempt = 0;
 				Enemy_search_mode = zizhuan_mode;  
 				xuanzhuan_count = 2000;
 			 START_ZONE_flag = 0;
@@ -965,10 +967,12 @@ void  taixia (void )
 			STOP();
 		  osDelay(100);
 			TURN__taixia(90);
+			backing_attempt = 1;
 			move(-300,-300);
 			osDelay(800);
 			STOP();
 			osDelay(150);
+			backing_attempt = 0;
 			TURN__taixia(-90);
 			START_ZONE_flag = 0;
 	}

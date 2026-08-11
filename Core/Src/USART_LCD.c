@@ -188,7 +188,7 @@ void PRINT_ADC  ( void )
 	osDelay(10);
 	printf("wset page1.num%d.val %d\r\n",7,B_JG_RIGHT);
 	osDelay(10);
-	printf("wset page1.num%d.val %d\r\n",8,(L_huidu+ R_huidu )/ 2 ); //
+	printf("wset page1.num%d.val %d\r\n",8,L_huidu); //
 	osDelay(10);
 	printf("wset page1.num%d.val %d\r\n",9,QIAN_R_JG);
 	osDelay(10);
@@ -204,7 +204,7 @@ void PRINT_ADC  ( void )
 	osDelay(10);
 	printf("wset page1.num%d.val %d\r\n",15,EDGE_JG_R);//EDGE_JG_R
 	osDelay(10); 
-	printf("wset page1.num%d.val %d\r\n",16,(B_L_Hui + B_R_HUI) /2 );
+	printf("wset page1.num%d.val %d\r\n",16,R_huidu );
 	osDelay(10);
 	printf("wset page1.num%d.val %d\r\n",17,X_LOCATION); 
 	osDelay(10);
