@@ -8,6 +8,7 @@
 #define Remote_mode      5
 #define Jiasudu_mode     6
 extern int16_t  LCD_MODE;
+extern uint8_t huishou_FLAG;
 void PRINT_ADC  ( void );
 void Analyze_LCD ( void );
 void LCD_interact ( void );

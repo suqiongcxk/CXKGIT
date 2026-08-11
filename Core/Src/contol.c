@@ -334,7 +334,6 @@ void  Enemy_search(void)
 				if(R_JG_30 <= JG_SIDE_30_LIGHT){ zizhaun_flag[7] = 1;} 
 				if(R_JG_60 <= JG_SIDE_60_LIGHT){zizhaun_flag[8] = 1;}
 				
-				
 			}
 			else 
 			{
@@ -495,8 +494,8 @@ void  taishangroaming   (void)
 //把速度值乘以0.71就是cm每秒的速度
 void move(float LEFT , float RIGHT )
 {
-	LEFT =   My_constrain(LEFT,-0.8*RPM_MAX,0.8*RPM_MAX)  ;
-	RIGHT =  My_constrain(RIGHT,-0.8*RPM_MAX,0.8*RPM_MAX) ;
+	LEFT =   My_constrain(LEFT,-0.7*RPM_MAX,0.7*RPM_MAX)  ;
+	RIGHT =  My_constrain(RIGHT,-0.7*RPM_MAX,0.7*RPM_MAX) ;
 //	LEFT*= 0.5;
 //	RIGHT*= 0.5;
 //	

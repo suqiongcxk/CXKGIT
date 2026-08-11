@@ -1,4 +1,4 @@
-﻿/* USER CODE BEGIN Header */
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * File Name          : freertos.c
@@ -362,7 +362,7 @@ void vADC_UPDATETask(void *argument)
 		{
 			if (roaming_veocity_STR > FAKE_ON_STAGE_SPEED_LIMIT) roaming_veocity_STR = FAKE_ON_STAGE_SPEED_LIMIT;
 		}
-		if(1)  //记得改回1
+		if(huishou_FLAG == 3)  //挥手启动完成后才进行状态检测
 			{
 				//记得补偿左右灰度的差值
 				if( (L_huidu < ARENA_GRAY_OFF_STAGE_L_MAX &&  L_huidu > ARENA_GRAY_OFF_STAGE_MIN ) && (R_huidu   < ARENA_GRAY_OFF_STAGE_R_MAX &&  R_huidu  > ARENA_GRAY_OFF_STAGE_MIN ) )
@@ -375,6 +375,7 @@ void vADC_UPDATETask(void *argument)
 							CAR_STATUS = OFF_STAGE ;
 						}else 
 						{
+							
 							OFF_STAGE_CNT ++;	
 						}
 					
@@ -582,22 +583,16 @@ void TEXT_VELOCITY_ADD( void )
 void TEXT_MOVE(void)
 {
 	  start_cycle = DWT->CYCCNT;
-//		MASTER_SEND_Frame(Slave1_ID, TEXT_VELOCITY,1 ,DATA_Frame); 
-//		Analyze_RS485_data();	
+		MASTER_SEND_Frame(Slave1_ID, TEXT_VELOCITY,1 ,DATA_Frame); 		
 
 		
-//		MASTER_SEND_Frame(Slave2_ID, TEXT_VELOCITY,1 ,DATA_Frame); 
-//		Analyze_RS485_data();		
+		MASTER_SEND_Frame(Slave2_ID, TEXT_VELOCITY,1 ,DATA_Frame); 
 
-//		
-//		MASTER_SEND_Frame(Slave3_ID, TEXT_VELOCITY,1 ,DATA_Frame); 
-//		Analyze_RS485_data();			
+		 
+		MASTER_SEND_Frame(Slave3_ID, TEXT_VELOCITY,1 ,DATA_Frame); 
 
 
-//		MASTER_SEND_Frame(Slave4_ID, TEXT_VELOCITY,1 ,DATA_Frame); 
-//		Analyze_RS485_data();	
-	  end_cycle = DWT->CYCCNT;
-//	  printf("%d\n", (end_cycle - start_cycle)/1000);
+		MASTER_SEND_Frame(Slave4_ID, TEXT_VELOCITY,1 ,DATA_Frame); 
 }
      
 //发送速度帧

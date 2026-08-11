@@ -38,16 +38,16 @@
 
 /*---- 索敌自转角度衰减 ----*/
 #define TURN_ANGLE_ATTEN_SPEED_THRESH   400     /* 直行速度 >= 此值时衰减转向角度（代替灰度判断）*/
-#define ARENA_GRAY_TURN_ANGLE_ATTEN 0.58f    /* 浅色区域自转角度衰减系数 */
+#define ARENA_GRAY_TURN_ANGLE_ATTEN    0.75f    /* 浅色区域自转角度衰减系数 */
 
 
 /*===========================================================================
  * 2. 灰度→速度映射参数（漫游速度计算）
  *===========================================================================*/
 #define GRAY_SPEED_LIGHT_THRESH     1900     /* 高灰度切换点：超过此值用固定高速 */
-#define GRAY_SPEED_LIGHT_MAX         400     /* 浅色区最大直行速度 ，在使用时会乘以1.7*/
+#define GRAY_SPEED_LIGHT_MAX         440     /* 浅色区最大直行速度 ，在使用时会乘以1.7*/
 #define GRAY_SPEED_DIVISOR          9.0f     /* 深色区速度除数（灰度/除数 = 速度）*/
-#define GRAY_SPEED_AUTO_ROTATE      1800     /* 低于此灰度值强制自转模式 */
+#define GRAY_SPEED_AUTO_ROTATE      1900     /* 低于此灰度值强制自转模式 */
 #define GRAY_TURN_HIGH_THRESH       2900     /* 转弯高速切换点 */
 #define GRAY_TURN_MAX_SPEED          550     /* 转弯时最大速度 */
 #define GRAY_TURN_DIVISOR_L        6.5f     /* 左轮优先时速度除数 */

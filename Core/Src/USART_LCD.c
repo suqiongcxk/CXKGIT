@@ -11,7 +11,7 @@
 #include "GPIO.h"
 char LCD_Frame [ 30] = {0};
 int16_t   LCD_HEX  = 0;
-int16_t   LCD_MODE  = ADC_mode; //上电默认ADC调试模式
+int16_t   LCD_MODE  = ADC_mode ; //上电默认ADC调试模式
 extern JY901S_AngleData IMU_DATA;
 
 
@@ -103,10 +103,11 @@ void LCD_interact ( void )
 													move(-350,-450);  
 													osDelay(1150);   
 													TURN_ZIZHUAN(130);  
-//													STOP();
-//													osDelay(2000);
+													// STOP();
+													// osDelay(2000);
 													Enemy_search_mode = zizhuan_mode;  
 													xuanzhuan_count = XUANZHUAN_VALUE;
+													CAR_STATUS = ON_STAGE;//ForceCAR_STATUS = ON_STAGE;
 													huishou_FLAG = 3;
 												}else if (huishou_FLAG ==3)
 												{
