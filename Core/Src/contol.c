@@ -294,7 +294,7 @@ void  Enemy_search(void)
 
 				if(L_huidu + R_huidu >=ARENA_GRAY_BLUE*2)
 		{
-		move( 400,500);
+		move( 400,600);
 		}else 
 		{
 			move(100 , 250);
@@ -311,7 +311,7 @@ void  Enemy_search(void)
 		}
 		if(L_huidu + R_huidu >=ARENA_GRAY_BLUE*2)
 		{
-			move(500 , 400);
+			move(600 , 400);
 		}else 
 		{
 			move(250 , 100);
@@ -360,9 +360,9 @@ void  Enemy_search(void)
 								zizhaun_flag[4] * weight_60   + zizhaun_flag[8] * weight_60);
 			turn_angle = turn_angle>0 ? turn_angle/R_SENSOR_CNT : turn_angle/L_SENSOR_CNT ;
 		/*视觉追踪测试
-		turn_angle = 0;
+
 		*/
-		 
+		turn_angle = 0;
 		if(target_velocity_1[0] >= TURN_ANGLE_ATTEN_SPEED_THRESH && target_velocity_2[0] >= TURN_ANGLE_ATTEN_SPEED_THRESH)
 		{
 			turn_angle= turn_angle*ARENA_GRAY_TURN_ANGLE_ATTEN;
@@ -433,10 +433,10 @@ void VISUAL_MOVE(uint16_t X_LOCATION )
 		}else
 		{
 		  detal_X =  320 -  X_LOCATION ;
-		}  
+		}
 		
-	int vs_detal_veocity_L = roaming_veocity_STR  - 0.5f * detal_X +100; 
-	int vs_detal_veocity_R = roaming_veocity_STR + 0.5f * detal_X +100;
+	int vs_detal_veocity_L = 1.3 * roaming_veocity_STR  - 0.5f * detal_X ; 
+	int vs_detal_veocity_R = 1.3 * roaming_veocity_STR  + 0.5f * detal_X ;
 	if(vs_detal_veocity_L <150){vs_detal_veocity_L = 150;}
 	if(vs_detal_veocity_R <150){vs_detal_veocity_R = 150;}
 	

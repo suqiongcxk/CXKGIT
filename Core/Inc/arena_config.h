@@ -193,7 +193,7 @@
 
 /*---- 低速开环转向 ----*/
 #define LOWV_90_SPEED               500     /* 90度转向基础速度 */
-#define LOWV_90_TIME                170     /* 90度转向时间(ms) */
+#define LOWV_90_TIME                190     /* 90度转向时间(ms) */
 #define LOWV_60_SPEED               400     /* 60度转向速度 */
 #define LOWV_60_TIME                130     /* 60度转向时间(ms) */
 
